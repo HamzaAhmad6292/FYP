@@ -1,0 +1,77 @@
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+desktop.ini
+
+# Ignore Python environment and package files
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.eggs/
+*.env
+env/
+venv/
+ENV/
+venv.bak/
+
+# Ignore Node.js environment files (for MERN or JavaScript projects)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+.pnpm-debug.log
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Ignore compiled files and executables
+*.out
+*.exe
+*.o
+
+# Ignore IDE files (VSCode, JetBrains, Sublime)
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore environment variables files
+.env
+.env.local
+.env.*.local
+
+# Ignore test coverage results
+coverage/
+*.lcov
+
+# Ignore database and local data files
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# Ignore build directories
+build/
+dist/
+out/
+*.bak
+
+# Ignore Python virtual environments or dependency files
+pip-wheel-metadata/
+*.whl
+
+# Ignore Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore temporary Git merge files
+*.orig
+
+# Ignore dependency directories for various languages
+vendor/
