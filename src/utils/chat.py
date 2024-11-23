@@ -15,11 +15,9 @@ class OllamaChatBot:
         system_prompt: Optional[str] = None,
         max_tokens: int = 8000
     ):
-        # Initialize callbacks for streaming
         callbacks = [StreamingStdOutCallbackHandler()] if streaming else None
         callback_manager = CallbackManager(callbacks) if callbacks else None
         
-        # Initialize the Ollama model
         self.llm = Ollama(
             model=model_name,
             base_url=base_url,
@@ -29,7 +27,6 @@ class OllamaChatBot:
             num_ctx=max_tokens,
         )
         
-        # Create a custom prompt template that includes the system prompt
         prompt_template = """
 {system_prompt}
 
@@ -39,27 +36,23 @@ Human: {input}
 Assistant: Let me help you as a sales representative from TechCare AI.
 """
         
-        # Initialize the prompt template
         PROMPT = PromptTemplate(
             input_variables=["history", "input", "system_prompt"],
             template=prompt_template
         )
         
-        # Initialize memory with the custom prompt
         self.memory = ConversationBufferMemory()
         
-        # Initialize conversation chain with the custom prompt
         self.conversation = ConversationChain(
             llm=self.llm,
             memory=self.memory,
             verbose=False,
-            prompt=PROMPT  # Use our custom prompt template
+            prompt=PROMPT  
         )
         
         self.system_prompt = system_prompt
 
     def chat(self, message: str) -> str:
-        # Include system prompt in the conversation context
         response = self.conversation.predict(
             input=message,
             system_prompt=self.system_prompt
