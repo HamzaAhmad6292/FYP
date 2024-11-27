@@ -6,15 +6,7 @@ import tiktoken
 class OllamaChat:
     def __init__(self, model, system_prompt="You are a helpful AI assistant", 
                  n_ctx=4096, temperature=0.7, max_tokens=1000):
-        """
-        Initialize the Ollama chat interface with token-limited memory.
-        
-        :param model: Name of the Ollama model to use
-        :param system_prompt: Initial system prompt for context setting
-        :param n_ctx: Context window size
-        :param temperature: Sampling temperature for generation
-        :param max_tokens: Maximum number of tokens to keep in memory
-        """
+
         self.model = model
         self.system_prompt = system_prompt
         self.n_ctx = n_ctx
@@ -69,13 +61,7 @@ class OllamaChat:
         self.conversation_history = trimmed_history
     
     def chat(self, user_prompt, update_ctx=True):
-        """
-        Send a chat message and get a response with token-limited memory.
-        
-        :param user_prompt: Message from the user
-        :param update_ctx: Whether to update conversation history
-        :return: Response from the model
-        """
+
         # Prepare messages for the API call
         messages = [
             {"role": "system", "content": self.system_prompt}
