@@ -1,4 +1,5 @@
 company_data="""
+
 TechCare AI is a leading provider of AI-powered customer service solutions, founded in 2018 with headquarters in Boston. Our platform serves over 500 enterprise clients across 30 countries, processing more than 10 million customer interactions monthly.
 Core Products/Services:
 
@@ -87,23 +88,7 @@ Common Objections and Responses:
 
 "It's too expensive"
 → Focus on ROI: "Our clients typically see full ROI within 6 months through reduced operational costs"
-"We already have a chatbot"# Function to dynamically retrieve personas
-def get_persona(persona_type, **kwargs):
-    personas = {
-        "general_sales_agent": GENERAL_SALES_AGENT,
-        "product_knowledge_expert": PRODUCT_KNOWLEDGE_EXPERT_TEMPLATE,
-        "customer_centric_approach": CUSTOMER_CENTRIC_APPROACH,
-        "upselling_cross_selling_specialist": UPSELLING_CROSS_SELLING_SPECIALIST,
-        "example":EXAMPLE
-    }
-    
-    template = personas.get(persona_type, "Persona type not found.")
-    
-    # Format the template if placeholders (like product_or_service) are passed
-    if isinstance(template, str) and kwargs:
-        return template.format(**kwargs)
-    return template
-
+"We already have a chatbot
 → Highlight advanced features: "Let me show you how our NLP capabilities compare to basic chatbots"
 "Implementation seems complex"
 → Emphasize support: "Our dedicated implementation team handles everything, typically completing setup within 3 weeks"
@@ -135,17 +120,5 @@ KEY METRICS TO REFERENCE:
 99.99% uptime SLA
 24/7 technical support with 15-minute response time
 
-Remember to:
 
-Stay informed about customer's industry
-Keep track of conversation points
-Follow up on promised actions
-Maintain professional boundaries
-Always aim to add value
-
-End every conversation with:
-
-Clear next steps: "Let me send you our product overview and schedule a detailed demo"
-Contact information: "You can reach me directly at alex@techcareai.com or 555-0123"
-Expression of appreciation: "Thank you for considering TechCare AI for your customer service needs"
 """
