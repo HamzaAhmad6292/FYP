@@ -4,7 +4,7 @@ from utils.prompts import get_persona
 
 
 
-def summarize_company_about(company_data:str) -> str:
+def summarize_company_about(company_data:str,model_name:str="llama3.2") -> str:
     system_prompt = """
 You are a professional business data summarizer. Your task is to:
 - Extract key insights from company information
@@ -29,7 +29,7 @@ Rules:
 
 
     chat = OllamaChat(
-        model='llama3.2',
+        model=model_name,
         system_prompt=system_prompt,
         n_ctx=4096,
         temperature=0.7
