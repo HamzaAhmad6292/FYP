@@ -119,6 +119,4 @@ KEY METRICS TO REFERENCE:
 60-day average implementation time
 99.99% uptime SLA
 24/7 technical support with 15-minute response time
-
-
 """
