@@ -64,7 +64,6 @@ def build_sales_workflow():
     workflow.add_edge("product_pitch", "objection_handling")
     workflow.add_edge("objection_handling", "closing")
     workflow.add_edge("closing", END)
-    
     return workflow.compile()
 
 # Placeholder functions to be implemented with actual LLM logic
