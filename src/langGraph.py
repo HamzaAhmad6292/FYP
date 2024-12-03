@@ -31,7 +31,6 @@ def product_pitch_agent(state: AgentState):
         "conversation_history": state["conversation_history"] + [response],
         "current_stage": "objection_handling" if pitch_completed(response) else "product_pitch"
     }
-
 def objection_handling_agent(state: AgentState):
     # Address customer concerns
     response = generate_objection_response(state)
