@@ -90,7 +90,7 @@ Response Examples:
 
     - “Thank you so much for your time, [Customer Name]. It was great speaking with you. If you have any questions, feel free to reach out. Have a wonderful day!”  
     - “I appreciate you taking the time to chat with me today. Wishing you and everyone at [Customer Company] all the best. Goodbye!”  
-    - “Thanks for your time, [Customer Name]. I’ll be happy to follow up if needed. Take care, and have a great day!”  
+    - “Thanks for your time, [Customer Name]. Take care, and have a great day!”  
 """
 
 

@@ -13,7 +13,6 @@ class OllamaChat:
         self.max_tokens = max_tokens
         
         self.conversation_history = []
-        
         # Define the file to store conversation history
         self.history_file = os.path.join(os.path.expanduser('~'), 'ollama_chat_history.txt')
         
