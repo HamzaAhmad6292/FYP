@@ -27,7 +27,7 @@ Rules:
 
 
 
-
+    
     chat = OllamaChat(
         model=model_name,
         system_prompt=system_prompt,

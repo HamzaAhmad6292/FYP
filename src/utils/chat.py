@@ -45,14 +45,21 @@ class OllamaChat:
         
         self.conversation_history = trimmed_history
     
-    def chat(self, user_prompt, update_ctx=True):
-        """
-        Handle user interaction with the model.
-        
-        :param user_prompt: User's input prompt
-        :param update_ctx: Whether to update the conversation history
-        :return: AI response
-        """
+    def chat(self, user_prompt, update_ctx=True,history="yes"):
+
+        if history=="no":
+            response=ollama.chat(
+                model="llama3.2",
+                messages= {"role": "user", "content": user_prompt},
+                options={
+                'num_ctx': self.n_ctx,
+                'temperature': self.temperature,
+                }
+            )
+            return response['message']['content']
+
+
+
         messages = [
             {"role": "system", "content": self.system_prompt}
         ]
@@ -132,3 +139,5 @@ class OllamaChat:
         :return: List of conversation messages
         """
         return self.conversation_history
+
+
