@@ -50,7 +50,7 @@ class OllamaChat:
         if history=="no":
             response=ollama.chat(
                 model="llama3.2",
-                messages= {"role": "user", "content": user_prompt},
+                messages= [{"role": "user", "content": user_prompt}],
                 options={
                 'num_ctx': self.n_ctx,
                 'temperature': self.temperature,

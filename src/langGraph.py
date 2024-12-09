@@ -5,7 +5,7 @@ from utils.chat import OllamaChat
 import json
 
 chat = OllamaChat(
-        model='llama3.1',  
+        model='llama3.2',  
         system_prompt="You are a Helpful AI",
         n_ctx=8000,
         temperature=1.2
@@ -24,12 +24,14 @@ class AgentState(TypedDict):
 def greeting_agent(state: AgentState):
     response = generate_greeting_response(state)
     return {
+        **state,
         "conversation_history": state["conversation_history"] + [response],
         "current_stage": "pitching" if is_customer_ready(response) else "greeting"
     }
 
 def pitching_agent(state: AgentState):
     response = generate_pitch_response(state)
+    
     return {
         "conversation_history": state["conversation_history"] + [response],
         "current_stage": "closing" if pitch_completed(response) else "pitching"
@@ -79,8 +81,9 @@ def is_customer_ready(conversation):
 
 
 def generate_pitch_response(state):
-    chat.system_prompt=get_persona("product_pitch_agent",customer_data=json.dumps(state["customer_data"]),product_service_details=json.dumps(state[""])) 
+    chat.system_prompt=get_persona("product_pitch_agent",customer_data=json.dumps(state["customer_data"]),product_service_details=json.dumps(state["product_info"])) 
     response=chat.chat(state["user_prompt"])
+
     return response
 
 
