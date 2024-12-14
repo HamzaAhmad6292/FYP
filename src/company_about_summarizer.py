@@ -1,10 +1,9 @@
-from utils.chat import OllamaChat
 from utils.prompts import get_persona
+from utils.groq_chat import GroqChat
 
 
 
-
-def summarize_company_about(company_data:str,model_name:str="llama3.2") -> str:
+def summarize_company_about(company_data:str,model_name:str="llama-3.1-8b-instant") -> str:
     system_prompt = """
 You are a professional business data summarizer. Your task is to:
 - Extract key insights from company information
@@ -28,14 +27,15 @@ Rules:
 
 
     
-    chat = OllamaChat(
-        model=model_name,
-        system_prompt=system_prompt,
-        n_ctx=4096,
-        temperature=0.7
-        )
+    chat = GroqChat(
+    model=model_name if model_name is not None else None,
+    system_prompt=system_prompt if system_prompt is not None else None,
+    temperature=0.7,
+    max_tokens=8000
+    )
+
     
-    response=chat.chat(user_prompt=user_prompt)
+    response=chat.chat(user_prompt=user_prompt,history="no")
 
 
     return response.strip()
