@@ -5,7 +5,7 @@ from utils.chat import OllamaChat
 import json
 from utils.groq_chat import GroqChat
 import string
-chat = GroqChat(model='gemma2-9b-it')
+chat = GroqChat(model='llama-3.3-70b-versatile')
 
 
 class AgentState(TypedDict):
@@ -29,7 +29,6 @@ def greeting_agent(state: AgentState):
     state["messages"].append("Sales Agent: " + response)
     state["user_prompt"] = user_input
     state["messages"].append("Customer: " + user_input)
-    
     ready_response = is_customer_ready(state["messages"])
     print("\nClassification: Is customer ready to hear pitch?")
     print(f"Response: {ready_response}")
