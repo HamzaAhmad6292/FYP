@@ -29,6 +29,7 @@ def greeting_agent(state: AgentState):
     state["messages"].append("Sales Agent: " + response)
     state["user_prompt"] = user_input
     state["messages"].append("Customer: " + user_input)
+    
     ready_response = is_customer_ready(state["messages"])
     print("\nClassification: Is customer ready to hear pitch?")
     print(f"Response: {ready_response}")

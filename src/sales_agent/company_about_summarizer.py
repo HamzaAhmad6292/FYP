@@ -5,15 +5,14 @@ from utils.groq_chat import GroqChat
 
 def summarize_company_about(company_data:str,model_name:str="llama-3.1-8b-instant") -> str:
     system_prompt = """
-You are a professional business data summarizer. Your task is to:
-- Extract key insights from company information
-- Convert complex data into clear, concise, and factual points
-- Ensure the summary is objective and easy to understand
+        You are a professional business data summarizer. Your task is to:
+        - Extract key insights from company information
+        - Convert complex data into clear, concise, and factual points
+        - Ensure the summary is objective and easy to understand
 
-Rules:
-- Use bullet points for clarity
-- Do not include information not present in the original data
-"""
+        Rules:
+        - Use bullet points for clarity
+        - Do not include information not present in the original data """
 
     user_prompt = f"""Analyze the following company data and provide a structured summary:
 
