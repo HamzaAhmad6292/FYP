@@ -1,5 +1,5 @@
-from utils.prompts import get_persona
-from utils.groq_chat import GroqChat
+from ..utils.prompts import get_persona
+from ..utils.groq_chat import GroqChat
 
 
 

@@ -1,16 +1,13 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass, field
-from single_agent_graph import create_sales_graph,SalesState
-
 import json
-
-
-from utils.example_company.company_about import company_data as Company_Data
-from utils.example_company.example_customer import example_customer 
-from utils.example_company.products_data import Products_data
+from ..utils.example_company.company_about import company_data as Company_Data
+from ..utils.example_company.example_customer import example_customer 
+from ..utils.example_company.products_data import Products_data
+from ..sales_agent.single_agent_graph import create_sales_graph,SalesState
 
 class SalesConversation:
-    def __init__(self, company_data: str, customer_data: Dict, product_info: Any):
+    def __init__(self, company_data: str=None, customer_data: Dict=None, product_info: Any=None):
         self.company_data = company_data if company_data else Company_Data
         self.customer_data = customer_data if customer_data else example_customer
         self.product_info =product_info if product_info else  Products_data["products_and_services"][0]
@@ -28,9 +25,8 @@ class SalesConversation:
             customer_data=self.customer_data,
             product_info=self.product_info
         )
-        print(state)
         final_state = self.sales_graph.invoke(state)
-        
+        print(final_state["current_node"])
         assistant_message = final_state["chat_history"][-1]
         self.chat_history.append(assistant_message)
     

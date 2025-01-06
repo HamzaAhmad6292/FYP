@@ -3,10 +3,9 @@ from langgraph.graph import Graph, StateGraph, END
 from pydantic import BaseModel, Field
 import json
 from typing import TypedDict, List, Optional
-from utils.prompts import get_persona
+from ..utils.prompts import get_persona
+from ..utils.groq_chat import GroqChat 
 
-from utils.groq_chat import GroqChat 
-# Custom state type for our sales agent
 llm_function = GroqChat(model='llama-3.3-70b-versatile')
 
 class SalesState(TypedDict):
@@ -43,7 +42,7 @@ def greeting(state: SalesState) -> Dict[str, Any]:
     response = llm_function.chat(user_message)
     
     new_message = {"role": "assistant", "content": response}
-    return {"chat_history": [new_message]}  # Return only the new message
+    return {"chat_history": [new_message]} 
 
 def pitching(state: SalesState) -> Dict[str, Any]:
     llm_function.system_prompt = get_persona(
