@@ -38,6 +38,19 @@ sales_bot=SalesConversation()
 
 
 
+
+def delete_file(folder_path, file_name):
+    file_path = os.path.join(folder_path, file_name)  # Combine folder path and file name
+    try:
+        if os.path.exists(file_path):  # Check if the file exists
+            os.remove(file_path)  # Delete the file
+            print(f"File '{file_name}' has been deleted.")
+        else:
+            print(f"File '{file_name}' does not exist in the folder.")
+    except Exception as e:
+        print(f"An error occurred while deleting the file: {e}")
+
+
 # =====================================================================
 # ====================        Routes       ============================
 # =====================================================================
@@ -61,6 +74,7 @@ def submit_info():
     })
 # =====================================================================
 
+
 # =====================================================================
 # This function is used by the front end to fetch the user's info
 @app.route('/get-user-info', methods=['GET'])
@@ -71,7 +85,6 @@ def get_user_info():
         "product":product,
         "description":description
     }
-
     print(sepr, "Sending user info to frontend", sepr)
     return jsonify(user_info)
 # =====================================================================
@@ -117,8 +130,11 @@ def transcription():
     # })
 
 
-    audio_url = url_for('static', filename='response_audio.mp3', _external=True)
+
     response_text = sales_bot.process_message(transcription_text)
+    audio_url = tts(response_text)
+    print(audio_url)
+    audio_url = url_for('static', filename='response_audio.mp3', _external=True)
     
     return jsonify({
         # 'message': 'Transcription received successfully, hi ya', 
@@ -129,6 +145,7 @@ def transcription():
 
 # =====================================================================
 def tts(text: str) -> str:
+    
     response = eleven_client.text_to_speech.convert(
         voice_id="IKne3meq5aSn9XLyUdCD",
         output_format="mp3_22050_32",
@@ -141,16 +158,18 @@ def tts(text: str) -> str:
             use_speaker_boost=True,
         ),
     )
+    delete_file("src/voice_api/static","response_audio.mp3")
 
-    # Define the path to save the audio file in the static directory
-    audio_file_path = os.path.join('static', 'response_audio.mp3')
-    
+    audio_file_path = os.path.join('src/voice_api/static', 'response_audio.mp3')
+    print(audio_file_path)
     with open(audio_file_path, 'wb') as f:
         for chunk in response:  # Iterate over the generator to write chunks
             f.write(chunk)
 
+    print("voice fetched")
+
     # Return the URL to access the audio
-    return f'/static/response_audio.mp3'  # URL path
+    return audio_file_path  # URL path
 # =====================================================================
 
 
