@@ -16,7 +16,7 @@ class GroqChat:
         self.max_tokens = max_tokens
         self.conversation_history = []
 
-    def chat(self, user_prompt: str, update_ctx=True, history="yes") -> str:
+    def chat(self, user_prompt: str, update_ctx=True, history="yes",save_history="yes") -> str:
         if history == "no":
             messages = [
                 {"role": "system", "content": self.system_prompt},
@@ -37,7 +37,7 @@ class GroqChat:
 
             bot_response = response.choices[0].message.content
 
-            if update_ctx and history == "yes":
+            if update_ctx and history == "yes" and save_history=="yes":
                 self.conversation_history.append({"role": "user", "content": user_prompt})
                 self.conversation_history.append({"role": "assistant", "content": bot_response})
 

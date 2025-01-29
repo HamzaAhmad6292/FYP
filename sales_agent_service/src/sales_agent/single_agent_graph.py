@@ -6,11 +6,11 @@ from typing import TypedDict, List, Optional
 from ..utils.prompts import get_persona
 from ..utils.groq_chat import GroqChat 
 
-llm_function = GroqChat(model='llama-3.3-70b-versatile')
+llm_function = GroqChat(model="llama-3.3-70b-versatile")
 
 class SalesState(TypedDict):
     company_data: str
-    chat_history: Annotated[List[Dict[str, str]], "chat_history"]  # Add Annotated type
+    chat_history: Annotated[List[Dict[str, str]], "chat_history"] = [] # Add Annotated type
     current_node: str
     customer_data: Dict
     product_info: any
@@ -18,18 +18,20 @@ class SalesState(TypedDict):
 def classifier(state: SalesState) -> Dict[str, Any]:
     system_prompt = """You are a sales conversation classifier.
     Based on the chat history, determine if this is:
-    - A new conversation requiring a greeting
-    - An ongoing conversation requiring a sales pitch
-    - A conversation ready for closing
+    - An ongoing conversation requiring a sales pitch or an on going pitch.
+    - A conversation completed ready for closing. 
+    - If the Chat History is Empty then ouput 'greeting'
     Return exactly one of: 'greeting', 'pitching', or 'closing
     Only output the required class and donot output anything else.
     '
     """
-    if state["chat_history"]==[]:
-        return 'greeting'
 
+    if len(state["chat_history"])==1 or 0:
+        print("Hamza The Great")
+        return {"current_node": "greeting"}
+    print("The Great Hamza")
     user_message = state["chat_history"][-1]["content"]
-    classification = llm_function.chat(system_prompt, user_message)
+    classification = llm_function.chat(system_prompt, user_message,save_history="no")
     
     return {"current_node": classification}
 
