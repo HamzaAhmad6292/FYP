@@ -25,6 +25,10 @@ yarn-debug.log
 package-lock.json
 .pnpm-debug.log
 
+# Venv of each service 
+/sales_agent_service/=0.26.0
+
+
 # Ignore logs and temporary files
 *.log
 *.tmp

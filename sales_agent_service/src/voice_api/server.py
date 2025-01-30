@@ -14,6 +14,7 @@ sepr = "\n===============================================\n"
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+
 load_dotenv()
 
 eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"),)
