@@ -117,7 +117,7 @@ async def submit_info(request: Request):
 async def get_user_info():
 
     print("\nRUNNING - /get-user-info")
-
+    
     user_info = {
         "name": name,
         "phone": phone,
@@ -137,7 +137,7 @@ async def get_user_info():
 async def get_ai_response():
 
     print("\nRUNNING - /get-ai-response")
-
+    
     resp = {
         "text": response
     }
