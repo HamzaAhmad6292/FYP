@@ -1,4 +1,4 @@
-from sales_agent.sales_conversation import SalesConversation
+from ..sales_agent.sales_conversation import SalesConversation
 
 def main():
 
