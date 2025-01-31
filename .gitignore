@@ -28,7 +28,8 @@ package-lock.json
 # Venv of each service 
 /sales_agent_service/=0.26.0/
 /sales_agent_service/venv/
-/sales_agent_service/src/static/
+sales_agent_service/src/voice_api/static/response_audio.mp3
+sales_agent_service/src/voice_api/static/
 /crm_integration_service/venv/
 /crm_integration_service/=0.26.0
 /reporting_service/=0.26.0
