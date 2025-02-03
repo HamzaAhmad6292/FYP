@@ -1,0 +1,23 @@
+{
+    "mapping_rules": {
+      "Name": {
+        "description": "Represents the full name of a person, which can include first and last name. If only one part of the name is available, it should be used as is."
+      },
+      "Contact": {
+        "description": "Represents a phone number or any contact number of the person. The number should be in a standardized format."
+      },
+      "Email": {
+        "description": "Represents the email address of the person. It should be in a valid email format."
+      },
+      "Info": {
+        "description": "Contains any additional relevant information, remarks, or general details about the person that do not fit into other fields."
+      },
+      "Location": {
+        "description": "Represents the geographical location of the person, which may include city, state, country, or a full address."
+      },
+      "Product_to_pitch": {
+        "description": "Represents the product or service that should be pitched to the person based on their interests or preferences."
+      }
+    }
+  }
+  
