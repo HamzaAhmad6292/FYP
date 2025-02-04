@@ -16,19 +16,18 @@ class GroqChat:
         self.max_tokens = max_tokens
         self.conversation_history = []
 
-    def simple_chat(self, user_prompt: str,system_prompt:str) -> str:
+    def simple_chat(self, user_prompt: str,system_prompt:str,temperature=None,max_tokens=None) -> str:
         messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"{user_prompt}"}
             ]
 
-
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens
+                temperature=temperature if temperature else self.temperature,
+                max_tokens=max_tokens if max_tokens else self.max_tokens
             )
 
             bot_response = response.choices[0].message.content
