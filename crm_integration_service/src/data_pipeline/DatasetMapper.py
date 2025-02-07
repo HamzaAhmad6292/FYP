@@ -17,7 +17,7 @@ class DatasetMapper:
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Error loading mapping rules: {e}")
             return {}
-    
+        
     def describe_dataset(self, df_head: pd.DataFrame):
         print("dataset")
         """Generate a JSON description of each column in a dataset."""

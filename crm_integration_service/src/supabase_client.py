@@ -11,7 +11,3 @@ SUPABASE_KEY = os.getenv("SERVICE_ROLE")
 
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-data = {"id": 1}
-
-response = supabase.table("Mapped_Dataset").insert(data).execute()
-print(response)
