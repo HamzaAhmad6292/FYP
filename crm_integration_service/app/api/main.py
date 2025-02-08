@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 
 import json
 import os
-from .helper_function import create_table_for_newUser,add_data_to_userDataset
+from .helper_function import create_table_for_new_user,add_data_to_user_dataset
 from ..supabase_client import supabase
 app = FastAPI()
 
@@ -29,16 +29,16 @@ async def receive_data(user_data:Request):
     try:
         print(user_id)
         # Load existing data
-        response=create_table_for_newUser(user_id,user_dataset)
+        response=create_table_for_new_user(user_id)
         print("response"+response)    
         with open(DATA_FILE, "r") as f:
             existing_data = json.load(f)
         
         
-        existing_data.append(user_data.dataset)
+        existing_data.append(user_dataset)
 
         if response:
-            dataset_response=add_data_to_userDataset(user_dataset)
+            dataset_response=add_data_to_user_dataset(user_id,user_dataset)
 
 
         # Save updated data
