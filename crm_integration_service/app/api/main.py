@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request,Query
 
 import json
 import os
@@ -30,20 +30,13 @@ async def receive_data(user_data:Request):
         print(user_id)
         # Load existing data
         response=create_table_for_new_user(user_id)
-        print("response"+response)    
-        with open(DATA_FILE, "r") as f:
-            existing_data = json.load(f)
-        
-        
-        existing_data.append(user_dataset)
+
 
         if response:
             dataset_response=add_data_to_user_dataset(user_id,user_dataset)
 
 
-        # Save updated data
-        with open(DATA_FILE, "w") as f:
-            json.dump(existing_data, f, indent=4)
+
 
         if dataset_response:
             return {"message": "Data received and stored successfully!","response":dataset_response}
@@ -54,12 +47,21 @@ async def receive_data(user_data:Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/get-data/")
-async def get_data():
-    """Fetches stored Google Sheets data."""
+
+
+async def get_user_data(user_id: int = Query(..., description="User ID to fetch data")):
+    """Fetches stored Google Sheets data for a specific user."""
+
     try:
-        with open(DATA_FILE, "r") as f:
-            data = json.load(f)
-        return {"data": data}
+        # Fetch user data from the Supabase table
+        response = supabase.table(f"dataset_{str(user_id)}").select("*").execute()
+
+        # Check if there was an error
+        if not response:
+            raise HTTPException(status_code="404", detail=f"Error fetching data: {response.data}")
+
+        return {"data": response.data}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
