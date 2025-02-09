@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request,Query
 
 import json
 import os
-from .helper_function import create_table_for_new_user,add_data_to_user_dataset
+from .helper_function import create_table_for_new_user,add_data_to_user_dataset,map_and_insert_dataset
 from ..supabase_client import supabase
 app = FastAPI()
 
@@ -32,13 +32,15 @@ async def receive_data(user_data:Request):
         response=create_table_for_new_user(user_id)
 
 
-        if response:
+        if response=="ok":
             dataset_response=add_data_to_user_dataset(user_id,user_dataset)
+        
+        response=map_and_insert_dataset(user_dataset=user_dataset,user_id=user_id)
 
 
 
 
-        if dataset_response:
+        if response:
             return {"message": "Data received and stored successfully!","response":dataset_response}
         else:
             return{"masla":"matter hogia boss"}
@@ -47,7 +49,6 @@ async def receive_data(user_data:Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/get-data/")
-
 
 async def get_user_data(user_id: int = Query(..., description="User ID to fetch data")):
     """Fetches stored Google Sheets data for a specific user."""

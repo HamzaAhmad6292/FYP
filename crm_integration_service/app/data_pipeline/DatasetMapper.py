@@ -1,6 +1,7 @@
 import pandas as pd
 import json
-from utils.groq_chat import GroqChat
+from ..utils.groq_chat import GroqChat
+
 
 class DatasetMapper:
     def __init__(self, model_name="llama-3.3-70b-versatile", rules_path="./utils/mapping_rules.json"):
@@ -8,7 +9,7 @@ class DatasetMapper:
         self.rules_path = rules_path
         self.rules = self.load_mapping_rules()
         self.dataset:pd.DataFrame
-    
+
     def load_mapping_rules(self):
         """Load column mapping rules from a JSON file."""
         try:
@@ -29,7 +30,6 @@ class DatasetMapper:
         user_prompt = f"""Analyze the following DataFrame head and provide a JSON description of each column's characteristics and potential meaning:
         {df_head.to_string()}
         Format your response as a valid JSON object with descriptive insights for each column."""
-        print("Hamza The Great")
         try:
             response = self.llm.simple_chat(system_prompt=system_prompt, user_prompt=user_prompt, temperature=0.95, max_tokens=2000)
             return response
@@ -76,10 +76,12 @@ class DatasetMapper:
             print(f"Error in get_mapping_values: {e}")
         return mappings
     
-    def map_dataset(self, source_path: str):
+    def map_dataset(self,json_data:list, source_path: str=None):
         """Map columns from a source dataset to a target dataset based on predefined rules."""
         try:
-            df = pd.read_csv(source_path)
+            # df = pd.read_csv(source_path)
+            df=pd.DataFrame(json_data)
+            print(df)
 
             report = self.describe_dataset(df_head=df.head())
             mappings = self.get_mapping_values(report)
@@ -87,6 +89,7 @@ class DatasetMapper:
             not_compatible = []
             
             keys = list(self.rules.get("mapping_rules", {}).keys())
+            print(keys)
 
             for i, source in enumerate(mappings):
                 if source == "Nothing Compatible":
