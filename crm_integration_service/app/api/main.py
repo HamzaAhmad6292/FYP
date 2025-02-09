@@ -49,7 +49,6 @@ async def receive_data(user_data:Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/get-data/")
-
 async def get_user_data(user_id: int = Query(..., description="User ID to fetch data")):
     """Fetches stored Google Sheets data for a specific user."""
 
@@ -65,4 +64,24 @@ async def get_user_data(user_id: int = Query(..., description="User ID to fetch 
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/get-mapped-data/")
+async def get_mapped_user_data(user_id: int = Query(..., description="User ID to fetch mapped data")):
+    """Fetches stored Google Sheets data for a specific user."""
+
+    try:
+        print("Hamza the great")
+        # Fetch user data from the Supabase table
+        response = supabase.table("Mapped_Dataset").select("*").eq("User_id", user_id).execute()
+
+        # Check if there was an error
+        if not response:
+            raise HTTPException(status_code="404", detail=f"Error fetching data: {response.data}")
+
+        return {"data": response}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
