@@ -71,7 +71,6 @@ async def get_mapped_user_data(user_id: int = Query(..., description="User ID to
     """Fetches stored Google Sheets data for a specific user."""
 
     try:
-        print("Hamza the great")
         # Fetch user data from the Supabase table
         response = supabase.table("Mapped_Dataset").select("*").eq("User_id", user_id).execute()
 
