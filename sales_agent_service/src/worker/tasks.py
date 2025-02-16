@@ -1,52 +1,67 @@
-# src/worker/tasks.py
-
 import time
-from worker.celery_app import celery_app
+from src.worker.celery_app import celery_app
 from ..supabase_client import supabase
+
 TABLE_NAME="users_data"
-USER_ID="1212"
+# Initialize the Supabase client (this will be reused in tasks)
 
 @celery_app.task
-def update_conversation(row_ids):
+def update_Conversation(row_Ids):
     """
-    Update each row (by id) in the Supabase table by setting 'conversation' to 'hello'.
+    Update each row (by Id) in the Supabase table by setting 'Conversation' to 'hello'.
+    After updating each row, wait for 10 seconds and then print a message indicating
+    that the row has been updated.
     """
     updated_count = 0
-    for row_id in row_ids:
+    for row_Id in row_Ids:
+        # Update the 'Conversation' column for this row
         response = (
             supabase.table(TABLE_NAME)
-            .update({"conversation": "hello"})
-            .eq("id", row_id)
+            .update({"Conversation": "hello"})
+            .eq("Id", row_Id)
             .execute()
         )
-        # Optional: log response or check for errors
         updated_count += 1
-        # Simulate processing time (remove in production)
-        time.sleep(0.5)
+
+        # Print a message indicating that this row has been updated.
+        print(f"Row with Id {row_Id} has been updated.")
+
+        # Wait for 10 seconds before processing the next row.
+        time.sleep(10)
     return f"Updated {updated_count} rows."
 
 @celery_app.task
-def process_dataset(num_workers=2):
+def process_dataset(User_id, num_workers=2):
     """
-    Fetch rows from Supabase that haven't been updated (i.e. where conversation is not 'hello'),
+    Fetch rows from Supabase for a given user where 'Conversation' is not 'hello',
     split them into chunks for the specified number of workers, and dispatch update tasks.
     """
-    # Fetch rows where 'conversation' is not 'hello' (assuming unprocessed rows have null/other value)
-    result = supabase.table(TABLE_NAME).select("id, conversation").neq("conversation", "hello").execute()
+    # Fetch rows for the specified user where 'Conversation' is not 'hello'
+    result = (
+            supabase.table(TABLE_NAME)
+            .select("Id, User_id, Conversation")
+            .eq("User_id", "6292")
+            .or_("Conversation.neq.hello, Conversation.is.null")
+            .execute()
+        )
     rows = result.data if result.data else []
 
     if not rows:
-        return "No rows to process."
+        return f"No rows to process for User_id {User_id}."
 
-    # Extract the list of IDs to update
-    row_ids = [row["id"] for row in rows]
+    # Extract the list of Ids to update
+    row_Ids = [row["Id"] for row in rows]
 
     # Split the list into chunks for each worker.
     # The slicing [i::num_workers] creates roughly equal partitions.
-    chunks = [row_ids[i::num_workers] for i in range(num_workers)]
+    chunks = [row_Ids[i::num_workers] for i in range(num_workers)]
     
     # Dispatch a Celery task for each chunk
-    async_results = [update_conversation.delay(chunk) for chunk in chunks if chunk]
+    async_results = [update_Conversation.delay(chunk) for chunk in chunks if chunk]
 
-    # Return the task IDs for reference (the frontend could poll the backend or check Supabase)
-    return {"dispatched_tasks": [res.id for res in async_results]}
+    # Return the task Ids for reference
+    return {
+        "User_id": User_id,
+        "dispatched_tasks": [res.Id for res in async_results],
+        "total_rows": len(row_Ids)
+    }
