@@ -21,7 +21,7 @@ def update_Conversation(row_Ids):
             .eq("Id", row_Id)
             .execute()
         )
-        updated_count += 1
+        updated_count += 16 
 
         # Print a message indicating that this row has been updated.
         print(f"Row with Id {row_Id} has been updated.")
