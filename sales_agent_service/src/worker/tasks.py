@@ -14,6 +14,7 @@ def update_Conversation(row_Ids):
     """
     updated_count = 0
     for row_Id in row_Ids:
+
         # Update the 'Conversation' column for this row
         response = (
             supabase.table(TABLE_NAME)
@@ -21,14 +22,15 @@ def update_Conversation(row_Ids):
             .eq("Id", row_Id)
             .execute()
         )
-        updated_count += 16 
+        updated_count += 1
+        time.sleep(60)
 
         # Print a message indicating that this row has been updated.
         print(f"Row with Id {row_Id} has been updated.")
 
         # Wait for 10 seconds before processing the next row.
-        time.sleep(10)
     return f"Updated {updated_count} rows."
+
 
 @celery_app.task
 def process_dataset(User_id, num_workers=2):
@@ -36,15 +38,15 @@ def process_dataset(User_id, num_workers=2):
     Fetch rows from Supabase for a given user where 'Conversation' is not 'hello',
     split them into chunks for the specified number of workers, and dispatch update tasks.
     """
-    # Fetch rows for the specified user where 'Conversation' is not 'hello'
     result = (
             supabase.table(TABLE_NAME)
             .select("Id, User_id, Conversation")
-            .eq("User_id", "6292")
+            .eq("User_id", User_id)
             .or_("Conversation.neq.hello, Conversation.is.null")
             .execute()
         )
     rows = result.data if result.data else []
+
 
     if not rows:
         return f"No rows to process for User_id {User_id}."
@@ -62,6 +64,5 @@ def process_dataset(User_id, num_workers=2):
     # Return the task Ids for reference
     return {
         "User_id": User_id,
-        "dispatched_tasks": [res.Id for res in async_results],
         "total_rows": len(row_Ids)
     }
