@@ -1,11 +1,11 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass, field
 import json
-from ..utils.example_company.company_about import company_data as Company_Data
-from ..utils.example_company.example_customer import example_customer 
-from ..utils.example_company.products_data import Products_data
-from ..sales_agent.single_agent_graph import create_sales_graph,SalesState
-
+import sys
+from utils.example_company.company_about import company_data as Company_Data
+from utils.example_company.example_customer import example_customer 
+from utils.example_company.products_data import Products_data
+from sales_agent.single_agent_graph import create_sales_graph,SalesState
 class SalesConversation:
     def __init__(self, company_data: str=None, customer_data: Dict=None, product_info: Any=None):
         self.company_data = company_data if company_data else Company_Data
@@ -17,6 +17,7 @@ class SalesConversation:
     def process_message(self, message: str) -> str:
 
         self.chat_history.append({"role": "user", "content": message})
+        print(self.chat_history)
         
         state = SalesState(
             chat_history=self.chat_history,

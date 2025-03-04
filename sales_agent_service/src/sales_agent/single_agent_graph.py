@@ -3,8 +3,8 @@ from langgraph.graph import Graph, StateGraph, END
 from pydantic import BaseModel, Field
 import json
 from typing import TypedDict, List, Optional
-from ..utils.prompts import get_persona
-from ..utils.groq_chat import GroqChat 
+from utils.prompts import get_persona
+from utils.groq_chat import GroqChat 
 
 llm_function = GroqChat(model="llama-3.3-70b-versatile")
 
