@@ -6,13 +6,16 @@ from utils.example_company.company_about import company_data as Company_Data
 from utils.example_company.example_customer import example_customer 
 from utils.example_company.products_data import Products_data
 from sales_agent.single_agent_graph import create_sales_graph,SalesState
+from utils.groq_chat import GroqChat
 class SalesConversation:
     def __init__(self, company_data: str=None, customer_data: Dict=None, product_info: Any=None):
         self.company_data = company_data if company_data else Company_Data
         self.customer_data = customer_data if customer_data else example_customer
         self.product_info =product_info if product_info else  Products_data["products_and_services"][0]
         self.chat_history: List[Dict[str, str]] = []
-        self.sales_graph = create_sales_graph()
+        self.llm_function = GroqChat(model="llama-3.3-70b-versatile")
+        self.sales_graph = create_sales_graph(self.llm_function)
+        
 
     def process_message(self, message: str) -> str:
 
