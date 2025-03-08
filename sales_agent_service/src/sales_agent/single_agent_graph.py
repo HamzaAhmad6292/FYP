@@ -3,19 +3,19 @@ from langgraph.graph import Graph, StateGraph, END
 from pydantic import BaseModel, Field
 import json
 from typing import TypedDict, List, Optional
-from ..utils.prompts import get_persona
-from ..utils.groq_chat import GroqChat 
+from utils.prompts import get_persona
+from utils.groq_chat import GroqChat 
+from supabase_client import supabase
 
-llm_function = GroqChat(model="llama-3.3-70b-versatile")
 
 class SalesState(TypedDict):
     company_data: str
-    chat_history: Annotated[List[Dict[str, str]], "chat_history"] = [] # Add Annotated type
+    chat_history: Annotated[List[Dict[str, str]], "chat_history"] = []
     current_node: str
     customer_data: Dict
     product_info: any
 
-def classifier(state: SalesState) -> Dict[str, Any]:
+def classifier(state: SalesState,llm_function:GroqChat) -> Dict[str, Any]:
     system_prompt = """You are a sales conversation classifier.
     Based on the chat history, determine if this is:
     - An ongoing conversation requiring a sales pitch or an on going pitch.
@@ -35,7 +35,7 @@ def classifier(state: SalesState) -> Dict[str, Any]:
     
     return {"current_node": classification}
 
-def greeting(state: SalesState) -> Dict[str, Any]:
+def greeting(state: SalesState,llm_function:GroqChat) -> Dict[str, Any]:
     """Greeting node for new conversations."""
     system_prompt = get_persona("general_sales_agent", company_data=state["company_data"])
     llm_function.system_prompt = system_prompt
@@ -46,7 +46,7 @@ def greeting(state: SalesState) -> Dict[str, Any]:
     new_message = {"role": "assistant", "content": response}
     return {"chat_history": [new_message]} 
 
-def pitching(state: SalesState) -> Dict[str, Any]:
+def pitching(state: SalesState,llm_function:GroqChat) -> Dict[str, Any]:
     llm_function.system_prompt = get_persona(
         "product_pitch_agent",
         customer_data=json.dumps(state["customer_data"]),
@@ -57,9 +57,9 @@ def pitching(state: SalesState) -> Dict[str, Any]:
     response = llm_function.chat(user_message)
     
     new_message = {"role": "assistant", "content": response}
-    return {"chat_history": [new_message]}  # Return only the new message
+    return {"chat_history": [new_message]} 
 
-def closing(state: SalesState) -> Dict[str, Any]:
+def closing(state: SalesState,llm_function:GroqChat) -> Dict[str, Any]:
     """Closing node for finalizing sales conversations."""
     system_prompt = get_persona("closing_agent", company_data=state["company_data"])
     llm_function.system_prompt = system_prompt
@@ -68,19 +68,29 @@ def closing(state: SalesState) -> Dict[str, Any]:
     response = llm_function.chat(system_prompt, user_message)
     
     new_message = {"role": "assistant", "content": response}
-    return {"chat_history": [new_message]}  # Return only the new message
+    return {"chat_history": [new_message]}  
 
-def create_sales_graph() -> StateGraph:
+def store_conversation(state: SalesState) -> Dict[str, Any]:
+    # supabase.table(TABLE_NAME).update({
+    #         "processing_start_time": start_time,
+    #         "task_id": task_id,
+    #         "status": "processing"
+    #     }).eq("Id", row_id).execute()
+
+    # return {"chat_history": [new_message]}  
+    return None
+
+def create_sales_graph(llm_function:GroqChat) -> StateGraph:
     workflow = StateGraph(SalesState)
     
-    workflow.add_node("classifier", classifier)
-    workflow.add_node("greeting", greeting)
-    workflow.add_node("pitching", pitching)
-    workflow.add_node("closing", closing)
+    workflow.add_node("classifier", lambda x: classifier(x, llm_function))
+    workflow.add_node("greeting", lambda x: greeting(x, llm_function))
+    workflow.add_node("pitching", lambda x: pitching(x, llm_function))
+    workflow.add_node("closing", lambda x: closing(x, llm_function))
+    workflow.add_node("store_conversation", store_conversation)
     
     workflow.set_entry_point("classifier")
     
-    # Add conditional edges based on classifier output
     workflow.add_conditional_edges(
         "classifier",
         lambda x: x["current_node"],

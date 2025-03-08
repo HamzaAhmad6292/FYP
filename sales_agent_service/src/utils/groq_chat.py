@@ -46,7 +46,7 @@ class GroqChat:
         except Exception as e:
             print(f"Error in chat: {e}")
             return None
-
+    
     def clear_history(self):
         """Clear the conversation history."""
         self.conversation_history = []
