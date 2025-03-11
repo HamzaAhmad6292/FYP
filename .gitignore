@@ -31,6 +31,10 @@ package-lock.json
 /sales_agent_service/venv/
 sales_agent_service/src/voice_api/static/response_audio.mp3
 sales_agent_service/src/voice_api/static/
+sales_agent_service/src/calling_agent/static/response_audio.mp3
+sales_agent_service/src/calling_agent/static/
+sales_agent_service/src/testing/static/response_audio.mp3
+sales_agent_service/src/testing/static/
 /crm_integration_service/venv/
 /crm_integration_service/.venv/
 
