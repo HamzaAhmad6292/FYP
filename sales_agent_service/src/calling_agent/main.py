@@ -37,7 +37,7 @@ eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
 PUBLIC_URL = "https://fc9c-39-46-254-90.ngrok-free.app"
 
 # Twilio Client
-client = Client(account_sid, auth_token)
+# client = Client(account_sid, auth_token)
 
 sales_bot = SalesConversation()
 

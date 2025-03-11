@@ -6,7 +6,7 @@ from twilio.rest import Client
 # and set the environment variables. See http://twil.io/secure
 
 
-client = Client(account_sid, auth_token)
+# client = Client(account_sid, auth_token)
 
 call = client.calls.create(
     url="http://demo.twilio.com/docs/classic.mp3",
