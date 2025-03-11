@@ -31,7 +31,7 @@ app.static_folder = "src/calling_agent/static"
 # =====================================================================
 
 
-eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
+# eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
 
 # Base URL for your public-facing server
 PUBLIC_URL = "https://fc9c-39-46-254-90.ngrok-free.app"
