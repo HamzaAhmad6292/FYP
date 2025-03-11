@@ -30,9 +30,7 @@ app.static_folder = "src/calling_agent/static"
 # =====================================================================
 # =====================================================================
 
-account_sid = "AC27ce5804db2a7a27466731bd08727e53"
-auth_token = "bc4608f3a89ba2a0e4e2b0f4bb393cf1"
-twilio_number = "+1 814 250 4572"
+
 eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
 
 # Base URL for your public-facing server
