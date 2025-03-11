@@ -28,14 +28,14 @@ app.static_folder = "src/testing/static"
 # =====================================================================
 # =====================================================================
 
-
+account_sid = os.getenv("ACCOUNT_SID")
+auth_token = os.getenv("AUTH_TOKEN")
+twilio_number = os.getenv("TWILIO_NUMBER")
 eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
-
-# Base URL for your public-facing server
-PUBLIC_URL = "https://085a-39-46-254-90.ngrok-free.app"
+PUBLIC_URL = os.getenv("PUBLIC_URL")
 
 # Twilio Client
-# client = Client(account_sid, auth_token)
+client = Client(account_sid, auth_token)
 
 sales_bot = SalesConversation()
 
