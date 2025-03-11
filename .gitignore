@@ -16,6 +16,7 @@ env/
 venv/
 vevn/
 ENV/
+twilio/env
 venv.bak/
 
 # Ignore Node.js environment files (for MERN or JavaScript projects)
