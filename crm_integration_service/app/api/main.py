@@ -48,7 +48,7 @@ async def receive_data(user_data:Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/get-data/")
+@app.get("/get-user-data/")
 async def get_user_data(user_id: int = Query(..., description="User ID to fetch data")):
     """Fetches stored Google Sheets data for a specific user."""
 
@@ -66,7 +66,7 @@ async def get_user_data(user_id: int = Query(..., description="User ID to fetch 
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@app.get("/get-mapped-data/")
+@app.get("/get-user-mapped-data/")
 async def get_mapped_user_data(user_id: int = Query(..., description="User ID to fetch mapped data")):
     """Fetches stored Google Sheets data for a specific user."""
 
