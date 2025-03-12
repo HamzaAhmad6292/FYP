@@ -9,62 +9,73 @@ from sales_agent.single_agent_graph import create_sales_graph,SalesState
 from utils.groq_chat import GroqChat
 
 
-
 class SalesConversation:
-    def __init__(self, company_data: str=None, customer_data: Dict=None, product_info: Any=None):
+    """Manages a single sales conversation session."""
+    
+    def __init__(self, company_data: str = None, customer_data: Dict = None, product_info: Any = None):
         self.company_data = company_data if company_data else Company_Data
         self.customer_data = customer_data if customer_data else example_customer
         self.product_info = product_info if product_info else Products_data["products_and_services"][0]
         self.chat_history: List[Dict[str, str]] = []
-        self.llm_function = GroqChat(model="llama-3.3-70b-versatile")
+        self.llm_function=GroqChat(model="llama-3.3-70b-versatile")
+        self.conversation_ended = False  # Default flag set to False
         self.sales_graph = create_sales_graph(self.llm_function)
-        self.conversation_complete = False
-        
+
     def process_message(self, message: str) -> str:
-        """Process a user message and return the assistant's response."""
-        # Add user message to chat history
+        """Processes user input and updates the conversation."""
         self.chat_history.append({"role": "user", "content": message})
-        
-        # Create state with current conversation context
+
         state = SalesState(
             chat_history=self.chat_history,
             current_node="classifier",
             company_data=self.company_data,
             customer_data=self.customer_data,
             product_info=self.product_info,
-            conversation_complete=self.conversation_complete
+            conversation_ended=self.conversation_ended  # Flag now included in state
         )
-        
-        # Invoke the graph with the current state
+
         final_state = self.sales_graph.invoke(state)
-        
-        # Update the chat history from the final state
-        self.chat_history = final_state["chat_history"]
-        
-        # Return the last assistant message
-        return self.chat_history[-1]["content"]
-        
-    def mark_conversation_complete(self) -> None:
-        """External method to mark the conversation as complete."""
-        self.conversation_complete = True
-        
+        print(f"Current Node: {final_state['current_node']}")
+
+        assistant_message = final_state["chat_history"][-1]
+        self.chat_history.append(assistant_message)
+
+        return assistant_message["content"]
+
+    def end_conversation(self):
+        """Sets the conversation_ended flag to True, triggering action node."""
+        self.conversation_ended = True
+        state = SalesState(
+            chat_history=self.chat_history,
+            current_node="classifier",
+            company_data=self.company_data,
+            customer_data=self.customer_data,
+            product_info=self.product_info,
+            conversation_ended=self.conversation_ended  # Flag now included in state
+        )
+
+        final_state = self.sales_graph.invoke(state)
+        print(f"Current Node: {final_state['current_node']}")
+
+        return "Graph Ended"
+
     def get_conversation_history(self) -> List[Dict[str, str]]:
-        """Get the full conversation history."""
+        """Returns the chat history."""
         return self.chat_history
-    
+
     def clear_conversation(self) -> None:
-        """Clear the conversation history and reset complete flag."""
+        """Clears the chat history."""
         self.chat_history = []
-        self.conversation_complete = False
-        
+        self.conversation_ended = False  # Reset flag when clearing
+
     def save_conversation(self, filename: str) -> None:
-        """Save the conversation history to a file."""
+        """Saves the conversation history to a file."""
         with open(filename, 'w') as f:
             json.dump(self.chat_history, f, indent=2)
-            
+
     @classmethod
-    def load_conversation(cls, filename: str, company_data: str=None, customer_data: Dict=None, product_info: Any=None) -> 'SalesConversation':
-        """Load a conversation from a file."""
+    def load_conversation(cls, filename: str, company_data: str, customer_data: Dict, product_info: Any) -> 'SalesConversation':
+        """Loads a conversation from a file."""
         conversation = cls(company_data, customer_data, product_info)
         with open(filename, 'r') as f:
             conversation.chat_history = json.load(f)

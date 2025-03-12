@@ -11,15 +11,19 @@ from utils.example_company.products_data import Products_data
 
 class SalesState(TypedDict):
     company_data: str
-    chat_history: List[Dict[str, str]]
+    chat_history: Annotated[List[Dict[str, str]], "chat_history"] = []  
     current_node: str
     customer_data: Dict
     product_info: Any
-    conversation_complete: bool
+    conversation_ended: bool  # Flag to indicate if the conversation has ended
+
 
 
 def classifier(state: SalesState, llm_function: GroqChat) -> Dict[str, Any]:
     """Classifier node to determine the next conversation state."""
+    
+    if state["conversation_ended"]:
+        return {"current_node": "action"}
     system_prompt = """You are a sales conversation classifier.
     Based on the chat history, determine if this is:
     - An ongoing conversation requiring a sales pitch or an on going pitch.
@@ -97,7 +101,8 @@ def should_execute_action(state: SalesState) -> str:
         return "classifier"
 
 
-def action_node(state: SalesState) -> Dict[str, Any]:
+def action(state: SalesState) -> Dict[str, Any]:
+    print("In thn Action")
     """
     Action Node that executes when the conversation is complete.
     This is a skeleton implementation that would handle various post-conversation actions.
@@ -121,61 +126,35 @@ def action_node(state: SalesState) -> Dict[str, Any]:
     return {"current_node": "action_complete"}
 
 
-def create_sales_graph(llm_function: GroqChat) -> StateGraph:
-    """Creates the sales conversation graph with continuous loop and action node."""
+def create_sales_graph(llm_function:GroqChat) -> StateGraph:
+    """Creates the state graph for the sales agent."""
     workflow = StateGraph(SalesState)
     
-    # Add nodes
     workflow.add_node("classifier", lambda x: classifier(x, llm_function))
     workflow.add_node("greeting", lambda x: greeting(x, llm_function))
     workflow.add_node("pitching", lambda x: pitching(x, llm_function))
     workflow.add_node("closing", lambda x: closing(x, llm_function))
-    workflow.add_node("action_node", action_node)
-    
-    # Set entry point
+    workflow.add_node("action", action)
+
     workflow.set_entry_point("classifier")
-    
-    # Add conditional edges from classifier to conversation nodes
+
+    # Conditional transitions
     workflow.add_conditional_edges(
         "classifier",
         lambda x: x["current_node"],
         {
             "greeting": "greeting",
             "pitching": "pitching",
-            "closing": "closing"
+            "closing": "closing",
+            "action": "action"  # Will go here only if conversation_ended = True
         }
     )
     
-    # Add edges from conversation nodes back to should_execute_action
-    workflow.add_conditional_edges(
-        "greeting",
-        should_execute_action,
-        {
-            "classifier": "classifier",
-            "action_node": "action_node"
-        }
-    )
-    
-    workflow.add_conditional_edges(
-        "pitching",
-        should_execute_action,
-        {
-            "classifier": "classifier",
-            "action_node": "action_node"
-        }
-    )
-    
-    workflow.add_conditional_edges(
-        "closing",  
-        should_execute_action,
-        {
-            "classifier": "classifier",
-            "action_node": "action_node"
-        }
-    )
-    
-    # Action node leads to END
-    workflow.add_edge("action_node", END)
-    print("Hamza The Great")
+    # Define next transitions
+    # workflow.add_edge("greeting", "classifier")
+    # workflow.add_edge("pitching", "classifier")
+    # workflow.add_edge("closing", "classifier")
+    workflow.add_edge("action", END)
+
     return workflow.compile()
 
