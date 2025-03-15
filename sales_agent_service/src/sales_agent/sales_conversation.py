@@ -31,7 +31,9 @@ class SalesConversation:
             company_data=self.company_data,
             customer_data=self.customer_data,
             product_info=self.product_info,
-            conversation_ended=self.conversation_ended  # Flag now included in state
+            conversation_ended=self.conversation_ended , # Flag now included in state
+            end_message={"Nothiong":"Nothing"}  # Flag now included in state
+
         )
 
         final_state = self.sales_graph.invoke(state)
@@ -51,13 +53,13 @@ class SalesConversation:
             company_data=self.company_data,
             customer_data=self.customer_data,
             product_info=self.product_info,
-            conversation_ended=self.conversation_ended  # Flag now included in state
+            conversation_ended=self.conversation_ended,
+            end_message={"Nothiong":"Nothing"}  # Flag now included in state
         )
 
         final_state = self.sales_graph.invoke(state)
         print(f"Current Node: {final_state['current_node']}")
-
-        return "Graph Ended"
+        return final_state["end_message"]
 
     def get_conversation_history(self) -> List[Dict[str, str]]:
         """Returns the chat history."""

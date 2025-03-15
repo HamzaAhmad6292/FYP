@@ -7,7 +7,13 @@ from utils.prompts import get_persona
 from utils.example_company.company_about import company_data as Company_Data
 from utils.example_company.example_customer import example_customer 
 from utils.example_company.products_data import Products_data
+from utils.email_sender import EmailSender
+import dotenv
+import os
+import time
+import re
 
+dotenv.load_dotenv()
 
 class SalesState(TypedDict):
     company_data: str
@@ -16,6 +22,7 @@ class SalesState(TypedDict):
     customer_data: Dict
     product_info: Any
     conversation_ended: bool  # Flag to indicate if the conversation has ended
+    end_message:json ={}
 
 
 
@@ -100,30 +107,94 @@ def should_execute_action(state: SalesState) -> str:
     else:
         return "classifier"
 
+def action(state: SalesState, llm_function: GroqChat) -> Dict[str, Any]:
+    """Action node to analyze sentiment, determine action, and send an email if necessary."""
 
-def action(state: SalesState) -> Dict[str, Any]:
-    print("In thn Action")
+
+    system_prompt = """You are an AI analyzing sales conversations.
+    Based on the chat history, determine:
+
+    1. SENTIMENT: Classify the overall customer sentiment as "positive", "neutral", or "negative"
+
+    2. INTEREST: Evaluate the customer's interest level as "high", "medium", or "low"
+    - "high": Customer shows clear enthusiasm or intent to purchase
+    - "medium": Customer is engaged and asking questions but not ready to commit
+    - "low": Customer shows minimal engagement or is just gathering basic information
+
+    3. ACTION: Recommend the specific next step for the sales team based on the conversation context
+    - This should be concrete and actionable (e.g., "Schedule follow-up call on Tuesday", "Send product brochure for Model X", etc.)
+    - Action is a single line intruction to the sales team what to do after this conversation.
+    - Tailor this to the customer's expressed interests and the conversation flow
+    - If there is no action required then Action element can ne 'No Action'
+    - If the conversation is incomplete and the call is cut then the Action should be "No Action"
+    - Remember that this is after the call has ended.
+
+    4. EMAIL ALERT: Determine if an immediate sales team notification is warranted
+    - Set "send_email" to true ONLY when the customer has clearly expressed purchase intent
+
+    Return ONLY this JSON object without additional text:
+    {
+    "sentiment": "positive" | "neutral" | "negative",
+    "interest": "high" | "medium" | "low",
+    "action": "specific next step recommendation",
+    "send_email": true | false
+    }
     """
-    Action Node that executes when the conversation is complete.
-    This is a skeleton implementation that would handle various post-conversation actions.
-    """
-    # Example of potential actions (not implemented, just structure)
-    
-    # 1. Store conversation in database
-    # store_conversation_in_db(state["chat_history"])
-    
-    # 2. Generate and save conversation summary
-    # summary = generate_summary(state["chat_history"])
-    # save_summary(summary, customer_id=state["customer_data"].get("id"))
-    
-    # 3. Extract important information
-    # extracted_info = extract_information(state["chat_history"])
-    # update_customer_data(state["customer_data"]["id"], extracted_info)
-    
-    # 4. Trigger notifications to sales team
-    # notify_sales_team(state["chat_history"], state["customer_data"])
-    
-    return {"current_node": "action_complete"}
+
+    conversation = json.dumps(state["chat_history"])
+
+    # Function to extract valid JSON from the response
+    def extract_json(text):
+        json_pattern = r'\{.*\}'  # Regex to find JSON-like content
+        match = re.search(json_pattern, text, re.DOTALL)
+        if match:
+            return match.group()  # Return only the matched JSON part
+        return None  # Return None if no valid JSON found
+
+    # Retry logic
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            result = llm_function.chat(system_prompt, conversation, save_history="no")
+            extracted_json = extract_json(result)
+            if extracted_json:
+                result_data = json.loads(extracted_json)
+            else:
+                raise json.JSONDecodeError("Invalid JSON", result, 0)
+            break  # If successful, exit loop
+        except (json.JSONDecodeError, TypeError):
+            if attempt < max_retries - 1:
+                time.sleep(1)  # Optional: Wait before retrying
+                continue  # Retry
+            else:
+                result_data = {
+                    "sentiment": "neutral",
+                    "interest": "low",
+                    "action": "unknown",
+                    "send_email": False
+                }
+
+    # If email should be sent, construct and send the email
+    if result_data.get("send_email") in ["true",True,"True"]:
+        email_sender = EmailSender()
+        recipient_email = "sales-team@example.com"
+        subject = "Customer Interested in Purchase"
+        message_text = f"""
+        A customer has shown interest in purchasing {state['product_info']}.
+        Sentiment: {result_data['sentiment']}
+        Action Identified: {result_data['action']}
+        Please follow up with the customer.
+        """
+        email_sender.send_email(recipient_email, message_text, subject)
+    state["end_message"]= {
+        "sentiment": result_data["sentiment"],
+        "action": result_data["action"],
+        "Conversation":state["chat_history"],
+        "Email":result_data["send_email"]
+    }
+    return state
+
+
 
 
 def create_sales_graph(llm_function:GroqChat) -> StateGraph:
@@ -134,7 +205,7 @@ def create_sales_graph(llm_function:GroqChat) -> StateGraph:
     workflow.add_node("greeting", lambda x: greeting(x, llm_function))
     workflow.add_node("pitching", lambda x: pitching(x, llm_function))
     workflow.add_node("closing", lambda x: closing(x, llm_function))
-    workflow.add_node("action", action)
+    workflow.add_node("action", lambda x: action(x, llm_function))
 
     workflow.set_entry_point("classifier")
 

@@ -9,16 +9,16 @@ def main():
     )
     
     # Sidebar for additional information
-    with st.sidebar:
-        st.header("Chat Insights")
+    # with st.sidebar:
+    #     st.header("Chat Insights")
         
-        # Placeholder for chat state and metadata
+    #     # Placeholder for chat state and metadata
     
-        state_info = "Classified as 'greeting'"
+    #     state_info = "Classified as 'greeting'"
         
-        st.subheader("Current Session")
-        st.metric("Total Messages", "Not Now Nigga")
-        st.metric("Last Input Type", "Now Now Nigga")
+    #     st.subheader("Current Session")
+    #     st.metric("Total Messages", "Not Now Nigga")
+    #     st.metric("Last Input Type", "Now Now Nigga")
     
     # Main application title
     st.title("Multi-Modal Chat Interface")
