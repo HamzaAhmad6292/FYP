@@ -10,11 +10,9 @@ def display_chat_history(chat_instance: SalesConversation):
     """
     Display the complete chat history.
     """
-    # Create a container for chat history with fixed height and scrolling
     chat_container = st.container()
     
     with chat_container:
-        # Display each message in the chat history
         for message in chat_instance.get_conversation_history():
             role = message["role"]
             content = message["content"]
@@ -25,7 +23,6 @@ def render_text_input(chat_instance: SalesConversation):
     """
     Render text input for chat messages.
     """
-    # Use st.form to create a form with submit button
     with st.form(key="message_form", clear_on_submit=True):
         user_input = st.text_input("Type your message:", key="text_input")
         submit_button = st.form_submit_button("Send")
@@ -50,8 +47,7 @@ def process_user_message(chat_instance: SalesConversation, message, input_type):
     """
     try:
         response = chat_instance.process_message(message)
-        st.rerun()  # Rerun the app to update chat history
-    
+        st.rerun()
     except Exception as e:
         st.error(f"Error processing {input_type} message: {str(e)}")
 
@@ -59,7 +55,6 @@ def render_chat_interface(chat_instance: SalesConversation):
     """
     Main chat interface with input method selection.
     """
-    # Create a layout with three main sections using columns
     st.markdown("""
         <style>
             .stApp {
@@ -74,13 +69,11 @@ def render_chat_interface(chat_instance: SalesConversation):
         </style>
     """, unsafe_allow_html=True)
     
-    # Display chat history in the main area
     with st.container():
         st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
         display_chat_history(chat_instance)
         st.markdown("</div>", unsafe_allow_html=True)
     
-    # Input method selection and input box at the bottom
     with st.container():
         col1, col2 = st.columns([1, 4])
         
@@ -96,3 +89,8 @@ def render_chat_interface(chat_instance: SalesConversation):
                 render_text_input(chat_instance)
             else:
                 render_audio_input(chat_instance)
+    
+    # Add end conversation button
+    if st.button("End Conversation"):
+        end_message = chat_instance.end_conversation()
+        st.success(end_message)
