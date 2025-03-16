@@ -11,7 +11,7 @@ PSQL_URL = "postgresql://postgres:hamzathegreat1234@db.gtizhtnrlztkccysrtkg.supa
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def map_and_insert_dataset(user_dataset, user_id):
+def map_and_insert_dataset(user_dataset, user_id,file_name):
     try:
         logging.info("Loading mapping rules from app/utils/mapping_rules.json")
         mapping_rules = pd.read_json('app/utils/mapping_rules.json')
@@ -24,6 +24,7 @@ def map_and_insert_dataset(user_dataset, user_id):
         logging.debug(f"Mapped dataset: {mapped_dataset}")
 
         mapped_dataset["User_id"] = user_id
+        mapped_dataset["File_Name"]=file_name
         logging.info("User ID added to the mapped dataset.")
 
         json_compatible_dataset = mapped_dataset.to_dict(orient='records')
