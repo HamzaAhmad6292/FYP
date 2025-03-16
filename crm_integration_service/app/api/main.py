@@ -15,11 +15,6 @@ from app.supabase_client import supabase  # Adjust this import to match your cli
 
 app = FastAPI()
 
-
-
-
-
-
 @app.post("/receive_data")
 async def receive_data(user_data:Request):
     data = await user_data.json()
