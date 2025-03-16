@@ -56,8 +56,7 @@ def delete_file(folder_path: str, file_name: str) -> None:
             print(f"File '{file_name}' does not exist in the folder.")
     except Exception as e:
         print(f"An error occurred while deleting the file: {e}")
-
-
+        
 def tts(text: str) -> str:
     # Make sure the static directory exists
     os.makedirs("src/calling_agent/static", exist_ok=True)

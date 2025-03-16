@@ -1,45 +1,48 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from fastapi import FastAPI, Request,Query
-
 import json
 import os
-from .helper_function import create_table_for_new_user,add_data_to_user_dataset,map_and_insert_dataset
+from .helper_function import create_table_for_new_user, add_data_to_user_dataset, map_and_insert_dataset
 from ..supabase_client import supabase
-from fastapi import FastAPI
 from celery.result import AsyncResult
 from app.worker.tasks import process_dataset
 from app.worker.celery_app import celery_app
-from app.supabase_client import supabase  # Adjust this import to match your client module
+from app.supabase_client import supabase
 
 
 app = FastAPI()
 
+# Add CORS middleware to allow cross-origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, you might want to restrict this in production
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 @app.post("/receive_data")
-async def receive_data(user_data:Request):
+async def receive_data(user_data: Request):
     data = await user_data.json()
-    user_id=data.get("user_id")
-    user_dataset=data.get("dataset")
-    file_name=data.get("filen_name")
+    user_id = data.get("user_id")
+    user_dataset = data.get("dataset")
+    file_name = data.get("filen_name")
 
     try:
         print(user_id)
         # Load existing data
-        response=create_table_for_new_user(user_id)
+        response = create_table_for_new_user(user_id)
 
-
-        if response=="ok":
-            dataset_response=add_data_to_user_dataset(user_id,user_dataset)
+        if response == "ok":
+            dataset_response = add_data_to_user_dataset(user_id, user_dataset)
         
-        response=map_and_insert_dataset(user_dataset=user_dataset,user_id=user_id,file_name=file_name)
-
-
-
+        response = map_and_insert_dataset(user_dataset=user_dataset, user_id=user_id, file_name=file_name)
 
         if response:
-            return {"message": "Data received and stored successfully!","response":dataset_response}
+            return {"message": "Data received and stored successfully!", "response": dataset_response}
         else:
-            return{"masla":"matter hogia boss"}
+            return {"masla": "matter hogia boss"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -54,7 +57,7 @@ async def get_user_data(user_id: int = Query(..., description="User ID to fetch 
 
         # Check if there was an error
         if not response:
-            raise HTTPException(status_code="404", detail=f"Error fetching data: {response.data}")
+            raise HTTPException(status_code=404, detail=f"Error fetching data: {response.data}")
 
         return {"data": response.data}
     
@@ -72,21 +75,13 @@ async def get_mapped_user_data(user_id: int = Query(..., description="User ID to
 
         # Check if there was an error
         if not response:
-            raise HTTPException(status_code="404", detail=f"Error fetching data: {response.data}")
+            raise HTTPException(status_code=404, detail=f"Error fetching data: {response.data}")
 
         return {"data": response}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-
-
-
-
-
-
-
-
 
 @app.post("/start-processing")
 async def start_processing(user_id: str, num_agents: int):
@@ -164,9 +159,3 @@ async def check_status(user_id: str):
                     .execute()
     
     return {"pending_rows": query.data}
-
-    
-
-
-
-
