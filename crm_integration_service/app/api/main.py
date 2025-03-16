@@ -25,6 +25,7 @@ async def receive_data(user_data:Request):
     data = await user_data.json()
     user_id=data.get("user_id")
     user_dataset=data.get("dataset")
+    file_name=data.get("filen_name")
 
     try:
         print(user_id)
@@ -35,7 +36,7 @@ async def receive_data(user_data:Request):
         if response=="ok":
             dataset_response=add_data_to_user_dataset(user_id,user_dataset)
         
-        response=map_and_insert_dataset(user_dataset=user_dataset,user_id=user_id)
+        response=map_and_insert_dataset(user_dataset=user_dataset,user_id=user_id,file_name=file_name)
 
 
 
