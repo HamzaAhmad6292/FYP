@@ -6,19 +6,24 @@ from elevenlabs.client import ElevenLabs
 from flask import jsonify
 
 import os
-from typing import Optional
+import uuid
+from typing import Optional, Dict
 
-from src.sales_agent.sales_conversation import SalesConversation
+from sales_agent.sales_conversation import SalesConversation
 
 app = Flask(__name__)
-app.static_folder = "src/calling_agent/static"
+app.static_folder = "calling_agent/static"
+sepr = "="*35
+
+# Dictionary to store active call sessions
+active_calls: Dict[str, dict] = {}
 
 # =====================================================================
 # =====================================================================
 # =====================================================================
 # Please use the following command to run this file from the root directory
-# i.e sales_agent_service
-# python3 -m src.calling_agent.main
+# i.e sales_agent_service/src
+# python3 -m calling_agent.main
 # You also need to have a publically exposed URL 
 # 1 - start the ngrok server 
 # 2 - Expose the port using NGROK 
@@ -26,21 +31,25 @@ app.static_folder = "src/calling_agent/static"
 # 4 - Initiate the call by hitting that ip address using CURL command or browser
 # Example : https://8e6c-39-63-130-153.ngrok-free.app/make_call
 # Make sure that you dont forget writing "/make_call" at the end of the URL
+
+# if you want to modify the parameters of the call : 
+# https://bdf1-39-46-241-212.ngrok-free.app/make_call?phone_number=%2B92%20320%200435945
 # =====================================================================
 # =====================================================================
 # =====================================================================
 
-account_sid = os.getenv("ACCOUNT_SID")
-auth_token = os.getenv("AUTH_TOKEN")
+account_sid = os.getenv("Twilio_ACCOUNT_SID")
+auth_token = os.getenv("Twilio_AUTH_TOKEN")
 twilio_number = os.getenv("TWILIO_NUMBER")
+# print("Account SID : " , account_sid)
+# print("Auth Token : " , auth_token)
+# print("Number : " , twilio_number)
+
 eleven_client = ElevenLabs(api_key=os.getenv("eleven_labs_key"))
 PUBLIC_URL = os.getenv("PUBLIC_URL")
 
-
 # Twilio Client
 client = Client(account_sid, auth_token)
-
-sales_bot = SalesConversation()
 
 # =====================================================================
 # =====================================================================
@@ -56,11 +65,14 @@ def delete_file(folder_path: str, file_name: str) -> None:
             print(f"File '{file_name}' does not exist in the folder.")
     except Exception as e:
         print(f"An error occurred while deleting the file: {e}")
-        
-def tts(text: str) -> str:
+
+def tts(text: str, session_id: str) -> str:
     # Make sure the static directory exists
-    os.makedirs("src/calling_agent/static", exist_ok=True)
+    os.makedirs("calling_agent/static", exist_ok=True)
     
+    # Use session_id to create unique audio files
+    audio_filename = f"response_audio_{session_id}.mp3"
+
     response = eleven_client.text_to_speech.convert(
         voice_id="IKne3meq5aSn9XLyUdCD",
         output_format="mp3_22050_32",
@@ -73,10 +85,11 @@ def tts(text: str) -> str:
             use_speaker_boost=True,
         ),
     )
-    delete_file("src/calling_agent/static", "response_audio.mp3")
 
-    audio_file_path = os.path.join('src/calling_agent/static', 'response_audio.mp3')
-    print("Saving audio to (Relative Path):",audio_file_path)
+    # Delete previous audio file if it exists
+    delete_file("calling_agent/static", audio_filename)
+    audio_file_path = os.path.join('calling_agent/static', audio_filename)
+    print(f"Saving audio to (Relative Path): {audio_file_path}")
     print(f"Saving audio to (Absolute Path): {os.path.abspath(audio_file_path)}")  # Print absolute path
 
     with open(audio_file_path, 'wb') as f:
@@ -86,7 +99,7 @@ def tts(text: str) -> str:
     print("voice fetched")
 
     # Return the public URL to access the audio
-    return f"{PUBLIC_URL}/static/response_audio.mp3"  # URL path
+    return f"{PUBLIC_URL}/static/{audio_filename}"  # URL path
 
 # =====================================================================
 # =====================================================================
@@ -95,31 +108,45 @@ def tts(text: str) -> str:
 # Route to initiate a call
 @app.route("/make_call")
 def make_call():
+    # Generate a unique session ID for this call
+    session_id = str(uuid.uuid4())
+
     # Get phone number (with fallback default)
     phone_number = request.args.get('phone_number', '+92 320 0435945')
     company_data = request.args.get('company_data', '')
     customer_data = request.args.get('customer_data', '')
     product_info = request.args.get('product_info', '')
     
-    global call_data
-    call_data = {
+    # Initialize a new sales bot for this call
+    sales_bot = SalesConversation()
+    
+    # Store the call data and sales bot in the active calls dictionary
+    active_calls[session_id] = {
+        'sales_bot': sales_bot,
         'company_data': company_data,
         'customer_data': customer_data,
         'product_info': product_info
     }
 
-    # print(call_data)
+    # Generate initial greeting
+    tmp = "Hello"
+    greeting_text = sales_bot.process_message(tmp)
+    audio_url = tts(greeting_text, session_id)
     
-    # Make the call
+    # Store the audio URL in the session
+    active_calls[session_id]['audio_url'] = audio_url
+    
+    # Make the call, passing the session ID as a parameter
     call = client.calls.create(
         to=phone_number,
         from_=twilio_number,
-        url=f"{PUBLIC_URL}/voice"  # Replace with your server URL
+        url=f"{PUBLIC_URL}/voice?session_id={session_id}"
     )
     
     return {
         "message": f"Call initiated with SID: {call.sid}",
         "details": {
+            "session_id": session_id,
             "phone_number": phone_number,
             "company_data": company_data,
             "customer_data": customer_data,
@@ -131,16 +158,26 @@ def make_call():
 # TwiML route that handles the call
 @app.route("/voice", methods=["POST"])
 def voice():
+    # Get the session ID from the URL parameters
+    session_id = request.args.get('session_id')
+    
+    # Check if the session exists (should always be true for valid calls)
+    if session_id not in active_calls:
+        # If somehow we get here without a valid session, create a new one
+        session_id = str(uuid.uuid4())
+        active_calls[session_id] = {
+            'sales_bot': SalesConversation(),
+            'audio_url': tts("Hello, this is an automated call. What can I help you with today?", session_id)
+        }
+    
     response = VoiceResponse()
     
-    # Generate the greeting audio with ElevenLabs
-    greeting_text = "Hello, this is an automated call. What can I help you with today?"
-    # audio_url = tts(greeting_text)
-    response.say(greeting_text)
+    # Play the audio for this session
+    response.play(active_calls[session_id]['audio_url'])
     
-    # Gather speech input
-    gather = Gather(input='speech', action='/process_speech', timeout=3, 
-                   speech_timeout='auto', language='en-US')
+    # Gather speech input, passing the session ID
+    gather = Gather(input='speech', action=f'/process_speech?session_id={session_id}', 
+                    timeout='auto', speech_timeout='auto', language='en-US')
     response.append(gather)
     
     return Response(str(response), mimetype="application/xml")
@@ -149,31 +186,69 @@ def voice():
 # Route to process speech input
 @app.route("/process_speech", methods=["POST"])
 def process_speech():
+    # Get the session ID from the URL parameters
+    session_id = request.args.get('session_id')
+    
+    # If the session doesn't exist, return an error message
+    if session_id not in active_calls:
+        response = VoiceResponse()
+        response.say("Sorry, there was an error with your call. Please try again.")
+        response.hangup()
+        return Response(str(response), mimetype="application/xml")
+    
     response = VoiceResponse()
     speech_result = request.form.get('SpeechResult', '')
-    print("Speech Result : ", speech_result)
+    print(f"Session {session_id} - Speech Result: {speech_result}")
     
-    # Get the response from sales bot
-    answer = sales_bot.process_message(speech_result) if sales_bot else "Bot response placeholder"
-    # answer = "Hamza's Bot should respond here."
+    # Get the response from this session's sales bot
+    sales_bot = active_calls[session_id]['sales_bot']
+    answer = sales_bot.process_message(speech_result)
+    
     # Generate audio response with ElevenLabs
-    audio_url = tts(answer)
+    audio_url = tts(answer, session_id)
     
-
+    # Update the audio URL for this session
+    active_calls[session_id]['audio_url'] = audio_url
+    
     response.play(audio_url)
     
     # Gather more input
-    gather = Gather(input='speech', action='/process_speech', timeout=3, 
-                   speech_timeout='auto', language='en-US')
+    gather = Gather(input='speech', action=f'/process_speech?session_id={session_id}', 
+                   timeout=3, speech_timeout='auto', language='en-US')
     response.append(gather)
     
+    print(sepr, "Response", sepr)
     return Response(str(response), mimetype="application/xml")
+
+
+# Route to handle call status updates
+@app.route("/call_status", methods=["POST"])
+def call_status():
+    # Get the session ID and call status from the request
+    session_id = request.form.get('session_id')
+    call_status = request.form.get('CallStatus')
+    
+    # If the call is completed or failed, clean up the session
+    if call_status in ['completed', 'failed', 'busy', 'no-answer']:
+        if session_id in active_calls:
+            # Clean up any audio files
+            try:
+                audio_filename = f"response_audio_{session_id}.mp3"
+                delete_file("calling_agent/static", audio_filename)
+            except Exception as e:
+                print(f"Error cleaning up files: {e}")
+            
+            # Remove the session
+            del active_calls[session_id]
+            print(f"Cleaned up session {session_id}")
+    
+    return "OK"
+
 
 # Route to serve audio files
 @app.route("/static/<filename>")
 def get_audio(filename):
     return send_from_directory('static', filename)
-
 
 
 @app.route("/return_demo_api")
@@ -219,8 +294,6 @@ def demo_api():
     
     # Return the JSON response
     return jsonify(response_data)
-
-
 
 
 if __name__ == "__main__":
