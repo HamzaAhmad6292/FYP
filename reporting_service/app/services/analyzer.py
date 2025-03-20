@@ -39,49 +39,43 @@ class BusinessAnalyzer:
         try:
             sections = []
             
-            # Header
-            sections.append("EXECUTIVE SUMMARY")
-            sections.append("=" * 50)  # Separator line
+            # Overview
             sections.append(response['executive_summary']['overview'])
             sections.append("")  # Empty line for spacing
             
             # KPIs
-            sections.append("KEY PERFORMANCE INDICATORS")
-            sections.append("-" * 30)  # Separator line
+            sections.append("**Key Performance Indicators**")
             for kpi in response['executive_summary']['kpis']:
-                sections.append(f"{kpi['name']}: {kpi['value']} ({kpi['change']})")
+                sections.append(f"{kpi['name']}: {kpi['value']} ")
             sections.append("")  # Empty line for spacing
             
             # Top Selling Products by Region
-            sections.append("TOP SELLING PRODUCTS BY REGION")
-            sections.append("-" * 30)  # Separator line
+            sections.append("**Top Selling Products by Region**")
             for region, products in response['executive_summary']['top_products_by_region'].items():
-                sections.append(f"\n{region}:")
+                sections.append(f"\n*{region}*")
                 for product in products:
-                    sections.append(f"• {product['name']}: {product['sales']} units (${product['revenue']})")
+                    sections.append(f"{product['name']}: {product['sales']} ")
             sections.append("")  # Empty line for spacing
             
             # Trends
-            sections.append("SIGNIFICANT TRENDS")
-            sections.append("-" * 30)  # Separator line
+            sections.append("**Significant Trends**")
             for trend in response['executive_summary']['key_trends']:
-                sections.append(f"• {trend}")
+                sections.append(trend)
             sections.append("")  # Empty line for spacing
             
             # Recommendations
-            sections.append("STRATEGIC RECOMMENDATIONS")
-            sections.append("-" * 30)  # Separator line
+            sections.append("**Strategic Recommendations**")
             for rec in response['executive_summary']['recommendations']:
-                sections.append(f"Action: {rec['action']}")
-                sections.append(f"Rationale: {rec['rationale']}")
-                sections.append(f"Expected Impact: {rec['expected_impact']}")
+                sections.append(f"*Action:* {rec['action']}")
+                sections.append(f"*Rationale:* {rec['rationale']}")
+                sections.append(f"*Expected Impact:* {rec['expected_impact']}")
                 sections.append("")  # Empty line between recommendations
                 
             return "\n".join(sections)
             
         except KeyError as e:
             logger.error(f"Summary formatting error: {str(e)}")
-            return "EXECUTIVE SUMMARY\n" + "=" * 50 + "\nSummary generation failed - please check raw insights"
+            return "Summary generation failed - please check raw insights"
 
     async def _generate_summary(self, insights: Dict) -> str:
         prompt = f"""Perform chain-of-thought analysis of this business data and generate a detailed executive summary of about 500 tokens :
@@ -89,7 +83,7 @@ class BusinessAnalyzer:
 
         Follow this exact structure:
         1. Calculate Key Performance Indicators (KPIs)
-        2. Identify Top Selling Products by Region (at least 2 per region)
+        2. Identify Top Selling Products by Region (at least 1 per region)
         3. Identify Significant Trends
         4. Derive Actionable Recommendations
         5. Compose Summary
@@ -114,26 +108,18 @@ class BusinessAnalyzer:
                     "Western Region": [
                         {{
                             "name": "Product A",
-                            "sales": "1,200 units",
+                            "sales": "1,200",
                             "revenue": "24,000"
                         }},
-                        {{
-                            "name": "Product B",
-                            "sales": "950 units",
-                            "revenue": "19,000"
-                        }}
+                        
                     ],
                     "Eastern Region": [
                         {{
                             "name": "Product C",
-                            "sales": "1,100 units",
+                            "sales": "1,100",
                             "revenue": "22,000"
                         }},
-                        {{
-                            "name": "Product D",
-                            "sales": "800 units",
-                            "revenue": "16,000"
-                        }}
+                        
                     ]
                 }},
                 "key_trends": [
@@ -153,7 +139,7 @@ class BusinessAnalyzer:
         Requirements:
         - Use formal text formatting for summary
         - KPIs must include financial and operational metrics
-        - Include at least 2 top selling products for each region with sales and revenue
+        - Include at least 1 top selling products for each region with sales and revenue
         - Recommendations must tie directly to trends
         - Maintain professional business tone
         - Quantify all claims with data points
