@@ -179,7 +179,7 @@ class BusinessChatbot:
         
         Question: {question}
         
-        Provide precise data-backed responses using markdown formatting.
+        Provide precise data-backed responses using formal text formatting.
         Highlight key numbers from reports when possible.
         """
         
