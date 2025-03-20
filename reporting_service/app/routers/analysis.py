@@ -29,6 +29,7 @@ async def analyze_data(file: UploadFile = File(...)):
         all_required_columns = list(set(
             col for req in chart_reqs for col in req['required_columns']
         ))
+        print("generated chart reqs :", chart_reqs)
         
         content = json.dumps({
             "schema_info": processed['schema'],
