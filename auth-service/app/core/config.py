@@ -16,7 +16,3 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = int(os.getenv("access_token_expire_minutes", 30))
     
 settings = Settings()
-
-print("[DEBUG] SUPABASE_URL:", settings.supabase_url)
-print("[DEBUG] SUPABASE_KEY:", settings.supabase_key)
-print("[DEBUG] SECRET_KEY:", settings.secret_key)

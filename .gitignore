@@ -39,7 +39,7 @@ sales_agent_service/src/calling_agent/static/response_audio.mp3
 sales_agent_service/src/calling_agent/static
 /crm_integration_service/venv/
 /crm_integration_service/.venv/
-
+reporting_service/app/.env
 /crm_integration_service/=0.26.0
 /reporting_service/=0.26.0
 /reporting_service/venv

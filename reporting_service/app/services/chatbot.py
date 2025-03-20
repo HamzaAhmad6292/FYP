@@ -1,19 +1,23 @@
 # app/services/chatbot.py
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.vectorstores import Qdrant
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from langchain_community.vectorstores import Qdrant
 from langchain_core.embeddings import Embeddings
-from langchain.retrievers import EnsembleRetriever 
+from langchain.retrievers import EnsembleRetriever
+from langchain_qdrant import Qdrant 
 from groq import Groq
 from typing import List
 from core.config import settings
 from langchain_groq import ChatGroq 
 import requests
 import json
+
+import warnings
+warnings.simplefilter("ignore")
+
 
 class SegmindEmbeddings(Embeddings):
     def __init__(self):
