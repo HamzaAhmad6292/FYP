@@ -10,7 +10,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     user_id = sys.argv[1]
-    num_workers = int(sys.argv[2]) if len(sys.argv) > 2 else 2
+    num_workers = int(sys.argv[2]) if len(sys.argv) > 2 else 1
 
     result = process_dataset.delay(user_id, num_workers)
     print(f"Processing task for user {user_id} dispatched with Task ID:", result.id)
