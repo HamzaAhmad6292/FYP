@@ -31,24 +31,24 @@ def classifier(state: SalesState, llm_function: GroqChat) -> Dict[str, Any]:
     
     if state["conversation_ended"]:
         return {"current_node": "action"}
-    system_prompt = """You are a sales conversation classifier.
-    Based on the chat history, determine if this is:
-    - An ongoing conversation requiring a sales pitch or an on going pitch.
-    - A conversation completed ready for closing. 
-    - If the Chat History is Empty then ouput 'greeting'
-    Return exactly one of: 'greeting', 'pitching', or 'closing'
-    Only output the required class and do not output anything else.
-    """
+    # system_prompt = """You are a sales conversation classifier.
+    # Based on the chat history, determine if this is:
+    # - An ongoing conversation requiring a sales pitch or an on going pitch.
+    # - A conversation completed ready for closing. 
+    # - If the Chat History is Empty then ouput 'greeting'
+    # Return exactly one of: 'greeting', 'pitching', or 'closing'
+    # Only output the required class and do not output anything else.
+    # """
 
     if len(state["chat_history"]) == 0 or len(state["chat_history"]) == 1:
         return {"current_node": "greeting"}
     
-    user_message = state["chat_history"][-1]["content"]
-    classification = llm_function.chat(system_prompt, user_message, save_history="no").strip().lower()
+    # user_message = state["chat_history"][-1]["content"]
+    # classification = llm_function.chat(system_prompt, user_message, save_history="no").strip().lower()
     
-    # Validate and default if needed
-    if classification not in ["greeting", "pitching", "closing"]:
-        classification = "pitching"  # Default to pitching if classification fails
+    # # Validate and default if needed
+    # if classification not in ["greeting", "pitching", "closing"]:
+    classification = "pitching"  # Default to pitching if classification fails
     print("Classifier:", classification)
     
     return {"current_node": classification}

@@ -20,8 +20,8 @@ def get_supabase() -> Client:
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_KEY") # From Supabase dashboard
     
-    print("[HARDCODED] URL:", url)
-    print("[HARDCODED] Key:", key[:10] + "...")
+    # print("[HARDCODED] URL:", url)
+    # print("[HARDCODED] Key:", key[:10] + "...")
     
     return create_client(url, key)
 

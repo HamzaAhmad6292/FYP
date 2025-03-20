@@ -7,7 +7,7 @@ cd ..
 
 # Start CRM Service
 cd crm_integration_service
-fish -c "source .venv/bin/activate.fish; uvicorn app.api.main:app --reload --port 5000" &
+fish -c "source .venv/bin/activate.fish; uvicorn app.api.main:app --reload --port 5000 & celery -A app.worker.celery_app worker --loglevel=info -P gevent --concurrency=1" &
 cd ..
 
 # Start Reporting Service

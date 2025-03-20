@@ -24,7 +24,7 @@ class SalesConversation:
     def process_message(self, message: str) -> str:
         """Processes user input and updates the conversation."""
         self.chat_history.append({"role": "user", "content": message})
-
+        
         state = SalesState(
             chat_history=self.chat_history,
             current_node="classifier",
