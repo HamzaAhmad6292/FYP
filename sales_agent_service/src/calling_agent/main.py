@@ -4,6 +4,7 @@ from twilio.rest import Client
 from elevenlabs import VoiceSettings
 from elevenlabs.client import ElevenLabs
 from flask import jsonify
+import time
 
 import os
 import uuid
@@ -140,7 +141,10 @@ def make_call():
     call = client.calls.create(
         to=phone_number,
         from_=twilio_number,
-        url=f"{PUBLIC_URL}/voice?session_id={session_id}"
+        url=f"{PUBLIC_URL}/voice?session_id={session_id}",
+        status_callback=f"{PUBLIC_URL}/call_status?session_id={session_id}",
+        status_callback_event=['completed', 'busy', 'no-answer', 'failed', 'canceled'],
+        status_callback_method='POST'
     )
     
     return {
@@ -227,18 +231,22 @@ def call_status():
     # Get the session ID and call status from the request
     session_id = request.form.get('session_id')
     call_status = request.form.get('CallStatus')
+    call_sid = request.form.get('CallSid')
     
+    print(f"Call status update: {call_status} for session {session_id}, Call SID: {call_sid}")
+
     # If the call is completed or failed, clean up the session
-    if call_status in ['completed', 'failed', 'busy', 'no-answer']:
+    if call_status in ['completed', 'failed', 'busy', 'no-answer', 'canceled']:
         if session_id in active_calls:
-            # Clean up any audio files
+            # Log the disconnection immediately
+            print(f"⚠️ Call disconnected: {call_status} for session {session_id}, Call SID: {call_sid}")
+
             try:
                 audio_filename = f"response_audio_{session_id}.mp3"
                 delete_file("calling_agent/static", audio_filename)
             except Exception as e:
                 print(f"Error cleaning up files: {e}")
             
-            # Remove the session
             del active_calls[session_id]
             print(f"Cleaned up session {session_id}")
     
@@ -253,7 +261,7 @@ def get_audio(filename):
 
 @app.route("/return_demo_api")
 def demo_api():
-    # Define the conversation data
+    time.sleep(6)
     conversation = {
         "messages": [
             {
@@ -284,7 +292,7 @@ def demo_api():
     }
     
     # Define the action
-    action = "schedule_demo"
+    action = "schedule_demo1"
     
     # Combine the data
     response_data = {
