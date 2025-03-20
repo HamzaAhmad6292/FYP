@@ -18,15 +18,16 @@ class SmartVisualizer:
 
     async def _get_visualization_specs(self, df: pd.DataFrame) -> list:
         """Get visualization specs with LLM"""
-        prompt = f"""Analyze this dataset and suggest atleast 4 visualizations:
+        prompt = f"""Analyze this dataset and suggest atleast 4 visualizations from [line, bar, pie, stacked line chart, donut, sales to product distribution ]:
         Columns: {df.columns.tolist()}
-        Sample Data: {df.head(5).to_dict()}
+        Sample Data: {df.head(10).to_dict()}
+        Statistical Information of Data : {df.describe().to_dict()}
         
         Return JSON format:
         {{
             "charts": [
                 {{
-                    "type": "line|bar|pie|histogram|sales to product distribution",
+                    "type": "line|bar|pie|stacked line|donut|sales to product distribution",
                     "required_columns": ["col1", "col2"],
                     "chart_purpose": "Show sales trends over time"
                 }}

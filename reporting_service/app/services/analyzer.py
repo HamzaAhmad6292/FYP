@@ -35,42 +35,64 @@ class BusinessAnalyzer:
         return await self.llm.generate(prompt)
     
     def _format_summary(self, response: Dict) -> str:
-        """Convert structured data to markdown"""
+        """Convert structured data to simple formatted text"""
         try:
-            md = []
+            sections = []
+            
             # Header
-            md.append(f"# Executive Summary\n{response['executive_summary']['overview']}")
+            sections.append("EXECUTIVE SUMMARY")
+            sections.append("=" * 50)  # Separator line
+            sections.append(response['executive_summary']['overview'])
+            sections.append("")  # Empty line for spacing
             
             # KPIs
-            md.append("## Key Performance Indicators")
-            md.append("| Metric | Value | Change |\n|--------|-------|--------|")
+            sections.append("KEY PERFORMANCE INDICATORS")
+            sections.append("-" * 30)  # Separator line
             for kpi in response['executive_summary']['kpis']:
-                md.append(f"| {kpi['name']} | {kpi['value']} | {kpi['change']} |")
+                sections.append(f"{kpi['name']}: {kpi['value']} ({kpi['change']})")
+            sections.append("")  # Empty line for spacing
+            
+            # Top Selling Products by Region
+            sections.append("TOP SELLING PRODUCTS BY REGION")
+            sections.append("-" * 30)  # Separator line
+            for region, products in response['executive_summary']['top_products_by_region'].items():
+                sections.append(f"\n{region}:")
+                for product in products:
+                    sections.append(f"• {product['name']}: {product['sales']} units (${product['revenue']})")
+            sections.append("")  # Empty line for spacing
             
             # Trends
-            md.append("\n## Significant Trends")
-            md.extend([f"- {trend}" for trend in response['executive_summary']['key_trends']])
+            sections.append("SIGNIFICANT TRENDS")
+            sections.append("-" * 30)  # Separator line
+            for trend in response['executive_summary']['key_trends']:
+                sections.append(f"• {trend}")
+            sections.append("")  # Empty line for spacing
             
             # Recommendations
-            md.append("\n## Strategic Recommendations")
+            sections.append("STRATEGIC RECOMMENDATIONS")
+            sections.append("-" * 30)  # Separator line
             for rec in response['executive_summary']['recommendations']:
-                md.append(f"### {rec['action']}\n**Rationale**: {rec['rationale']}\n**Expected Impact**: {rec['expected_impact']}\n")
+                sections.append(f"Action: {rec['action']}")
+                sections.append(f"Rationale: {rec['rationale']}")
+                sections.append(f"Expected Impact: {rec['expected_impact']}")
+                sections.append("")  # Empty line between recommendations
                 
-            return "\n".join(md)
+            return "\n".join(sections)
             
         except KeyError as e:
             logger.error(f"Summary formatting error: {str(e)}")
-            return "## Executive Summary\nSummary generation failed - please check raw insights"
+            return "EXECUTIVE SUMMARY\n" + "=" * 50 + "\nSummary generation failed - please check raw insights"
 
     async def _generate_summary(self, insights: Dict) -> str:
-        prompt = f"""Perform chain-of-thought analysis of this business data and generate executive summary:
+        prompt = f"""Perform chain-of-thought analysis of this business data and generate a detailed executive summary of about 500 tokens :
         {json.dumps(insights, indent=2)}
 
         Follow this exact structure:
         1. Calculate Key Performance Indicators (KPIs)
-        2. Identify Significant Trends
-        3. Derive Actionable Recommendations
-        4. Compose Summary
+        2. Identify Top Selling Products by Region (at least 2 per region)
+        3. Identify Significant Trends
+        4. Derive Actionable Recommendations
+        5. Compose Summary
 
         Return JSON with:
         {{
@@ -80,7 +102,7 @@ class BusinessAnalyzer:
                 "anomaly_detection": ["Noticed 25% sales drop in Product X during June", ...]
             }},
             "executive_summary": {{
-                "overview": "### Quarterly Performance Summary\\n...",
+                "overview": "Quarterly Performance Summary\\n...",
                 "kpis": [
                     {{
                         "name": "Monthly Growth Rate",
@@ -88,6 +110,32 @@ class BusinessAnalyzer:
                         "change": "+2% vs previous period"
                     }}
                 ],
+                "top_products_by_region": {{
+                    "Western Region": [
+                        {{
+                            "name": "Product A",
+                            "sales": "1,200 units",
+                            "revenue": "24,000"
+                        }},
+                        {{
+                            "name": "Product B",
+                            "sales": "950 units",
+                            "revenue": "19,000"
+                        }}
+                    ],
+                    "Eastern Region": [
+                        {{
+                            "name": "Product C",
+                            "sales": "1,100 units",
+                            "revenue": "22,000"
+                        }},
+                        {{
+                            "name": "Product D",
+                            "sales": "800 units",
+                            "revenue": "16,000"
+                        }}
+                    ]
+                }},
                 "key_trends": [
                     "Western region driving 60% of total growth",
                     "Category A products underperforming by 20%"
@@ -103,8 +151,9 @@ class BusinessAnalyzer:
         }}
         
         Requirements:
-        - Use markdown formatting for summary
+        - Use formal text formatting for summary
         - KPIs must include financial and operational metrics
+        - Include at least 2 top selling products for each region with sales and revenue
         - Recommendations must tie directly to trends
         - Maintain professional business tone
         - Quantify all claims with data points
